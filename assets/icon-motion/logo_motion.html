@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>秋招进度 · 图标动效预览</title>
+  <link rel="stylesheet" href="../icon-motion.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 40px; color: #183250; background: #eef5ff; font: 14px/1.5 "Microsoft YaHei",sans-serif; }
+    main { max-width: 1100px; margin: auto; }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    p { color: #5e7594; }
+    .stage { padding: 32px; margin-top: 24px; border: 1px solid #ccddf6; border-radius: 20px; background: linear-gradient(125deg,#fff,#e4f0ff); }
+    #logo-root { display: grid; grid-template-columns: repeat(7,1fr); gap: 16px; }
+    .sample { display: grid; justify-items: center; gap: 14px; }
+    .motion-box { width: 56px; height: 56px; padding: 0; border: 0; border-radius: 12px; display: grid; place-items: center; color: white; background: linear-gradient(135deg,#2563eb,#6aa1ff); box-shadow: 0 8px 18px #2563eb40; }
+    .motion-box:focus-visible { outline: 3px solid #1d5cdf; outline-offset: 5px; }
+    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 28px 0; }
+    .controls button { border: 1px solid #bed3f1; border-radius: 8px; background: white; color: #244b7b; padding: 8px 14px; cursor: pointer; }
+    .controls label { display: flex; align-items: center; gap: 10px; }
+    .studies { display: flex; gap: 48px; padding: 24px 8px; }
+    .principles { display: flex; gap: 8px; flex-wrap: wrap; }
+    .principles span { border-radius: 16px; background: #dfeafe; padding: 5px 12px; color: #466387; }
+    html.qa body { width: 840px; height: 144px; padding: 0; background: #fff; }
+    html.qa main { width: 840px; }
+    html.qa .stage { width: 840px; height: 144px; margin: 0; border: 0; border-radius: 0; padding: 44px 28px; background: white; }
+    html.qa #logo-root { grid-template-columns: repeat(7, 96px); gap: 16px; }
+    html.qa .sample { gap: 0; }
+    html.qa .sample > span, html.qa .extra { display: none; }
+  </style>
+  <script>if(new URLSearchParams(location.search).has("qa"))document.documentElement.classList.add("qa");</script>
+</head>
+<body>
+<main>
+  <header class="extra"><h1>图标悬停动效</h1><p>鼠标停留时循环，移开后平滑归位。七个图标保留原有矢量轮廓。</p></header>
+  <section class="stage" aria-label="七类图标预览"><div id="logo-root"></div></section>
+  <div class="controls extra">
+    <button id="replay" type="button">Replay · 连续预览</button>
+    <button id="rest" type="button">恢复静态</button>
+    <button id="slow" type="button" aria-pressed="false">慢放</button>
+    <label for="speed">速度 <input id="speed" type="range" min=".25" max="1.5" step=".05" value="1"><output id="speed-value">1×</output></label>
+  </div>
+  <section class="extra" aria-label="三个动作研究"><h2>动作研究</h2><div class="studies" id="studies"></div></section>
+  <div class="principles extra"><span>错拍与跟随</span><span>自然缓入缓出</span><span>克制的幅度</span><span>首尾无缝</span></div>
+  <p class="extra" id="motion-note">预览页控制按钮仅用于查看效果，不会加入正式界面。</p>
+</main>
+<script src="../icon-motion.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const labels = { brand: "秋招进度", overview: "总览", calendar: "投递台历", applications: "我的投递", offerbiu: "Offerbiu", resumes: "简历管理", codes: "代码手撕" };
+  const api = window.TrackerIconMotion;
+  const players = [];
+  for (const kind of api.kinds) {
+    const sample = document.createElement("div"); sample.className = "sample";
+    const button = document.createElement("button"); button.type = "button"; button.className = "motion-box";
+    button.setAttribute("aria-label", `预览${labels[kind]}动画`);
+    const label = document.createElement("span"); label.textContent = labels[kind];
+    sample.append(button, label); document.querySelector("#logo-root").append(sample);
+    players.push(api.attach(button, kind));
+  }
+  for (const [kind, title] of [["brand","提手与包身跟随"],["overview","四宫格错拍"],["codes","括号开合"]]) {
+    const sample = document.createElement("div"); sample.className = "sample";
+    const button = document.createElement("button"); button.type = "button"; button.className = "motion-box";
+    button.setAttribute("aria-label", title);
+    const label = document.createElement("span"); label.textContent = title;
+    sample.append(button,label); document.querySelector("#studies").append(sample);
+    api.attach(button, kind);
+  }
+  const reduced = params.has("reduced") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced || params.has("static") || params.has("t")) {
+    document.querySelectorAll(".motion-box").forEach(button => { button.style.pointerEvents = "none"; button.disabled = true; });
+  }
+  const setRate = value => { players.forEach(player => player.setRate(value)); document.querySelector("#speed-value").value = `${Number(value.toFixed(2))}×`; };
+  document.querySelector("#replay").addEventListener("click", () => { if (!reduced) players.forEach(player => { player.reset(); player.start(); }); });
+  document.querySelector("#rest").addEventListener("click", () => players.forEach(player => player.stop()));
+  document.querySelector("#speed").addEventListener("input", event => setRate(Number(event.target.value)));
+  document.querySelector("#slow").addEventListener("click", event => {
+    const slow = event.currentTarget.getAttribute("aria-pressed") !== "true";
+    event.currentTarget.setAttribute("aria-pressed", slow);
+    document.querySelector("#speed").value = slow ? .25 : 1; setRate(slow ? .25 : 1);
+  });
+  if (reduced) {
+    document.querySelector("#motion-note").textContent = "已启用减少动态效果：显示静态图标。";
+  } else if (!params.has("static") && params.has("t")) {
+    const time = Math.max(0, Number(params.get("t")) || 0);
+    // Endpoints include the same animation cleanup used after pointer leave.
+    players.forEach(player => time === 0 || time === api.duration ? player.reset() : player.seek(time));
+  }
+  window.__p2mReady = true;
+</script>
+</body>
+</html>

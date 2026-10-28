@@ -1,0 +1,21 @@
+/* 共享选中背景只移动自身，菜单图标和文字不参与动画。 */
+.sidebar { display: flex; flex-direction: column; overflow-y: auto; }
+.sidebar .brand, .sidebar .nav, .sidebar-actions { flex-shrink: 0; }
+.sidebar-actions { display: grid; gap: 8px; margin-top: auto; padding-top: 18px; border-top: 1px solid rgba(169, 197, 236, .45); }
+.sidebar .nav { margin-bottom: 24px; }
+.nav { position: relative; isolation: isolate; }
+.nav-highlight {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  border: 1px solid rgba(152, 189, 240, .66);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(242, 248, 255, .94), rgba(201, 225, 255, .88));
+  box-shadow: inset 3px 0 0 var(--blue), 0 5px 16px rgba(37, 99, 235, .07), var(--glass-edge);
+}
+.nav.highlight-ready .nav-highlight { opacity: 1; transition: transform 260ms cubic-bezier(.22, .8, .25, 1), width 260ms ease, height 260ms ease; }
+.nav.highlight-ready .nav-button.active { background: transparent; border-color: transparent; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .nav.highlight-ready .nav-highlight { transition: none; } }
+@media (prefers-reduced-transparency: reduce) { .nav-highlight { background: #dceaff; } }

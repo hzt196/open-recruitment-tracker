@@ -1,0 +1,13 @@
+/* Existing boxes keep their exact dimensions, gradient and shadow. */
+.p2m-host { position: relative; isolation: isolate; overflow: hidden; }
+.p2m-icon { position: relative; z-index: 1; flex-shrink: 0; width: 24px; height: 24px; overflow: visible; }
+.p2m-icon [data-part] { transform-box: fill-box; transform-origin: center; }
+.p2m-sheen {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  border-radius: inherit; opacity: 0;
+  background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.24) 50%, transparent 75%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .p2m-host, .p2m-host [data-part] { animation: none !important; transition: none !important; }
+  .p2m-sheen { display: none; }
+}
